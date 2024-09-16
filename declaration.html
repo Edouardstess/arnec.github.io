@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Déclaration Officielle</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Lien vers le fichier CSS -->
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_PAYPAL_CLIENT_ID&currency=USD"></script> <!-- PayPal SDK -->
+    <script>
+        function updateFormFields() {
+            const type = document.getElementById('declaration-type').value;
+            document.querySelectorAll('.dynamic-field').forEach(el => el.style.display = 'none');
+            
+            if (type === 'naissance') {
+                document.getElementById('naissance-fields').style.display = 'block';
+            } else if (type === 'mariage') {
+                document.getElementById('mariage-fields').style.display = 'block';
+            } else if (type === 'divorce') {
+                document.getElementById('divorce-fields').style.display = 'block';
+            } else if (type === 'deces') {
+                document.getElementById('deces-fields').style.display = 'block';
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Déclaration Officielle</h1>
+        <form id="declaration-form">
+            <div class="form-group">
+                <label for="nom">Nom:</label>
+                <input type="text" id="nom" name="nom" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+                <label for="telephone">Numéro de téléphone:</label>
+                <input type="tel" id="telephone" name="telephone" required pattern="[0-9]{10}" placeholder="Ex: 0123456789">
+            </div>
+
+            <div class="form-group">
+                <label for="commune">Commune:</label>
+                <input type="text" id="commune" name="commune" required>
+            </div>
+
+            <div class="form-group">
+                <label for="declaration-type">Type de déclaration:</label>
+                <select id="declaration-type" name="declaration-type" required onchange="updateFormFields()">
+                    <option value="">Choisir...</option>
+                    <option value="naissance">Déclaration de Naissance</option>
+                    <option value="mariage">Déclaration de Mariage</option>
+                    <option value="divorce">Déclaration de Divorce</option>
+                    <option value="deces">Déclaration de Décès</option>
+                </select>
+            </div>
+
+            <!-- Champs dynamiques -->
+            <div id="naissance-fields" class="dynamic-field" style="display: none;">
+                <div class="form-group">
+                    <label for="nom-enfant">Nom de l'enfant:</label>
+                    <input type="text" id="nom-enfant" name="nom-enfant">
+                </div>
+                <div class="form-group">
+                    <label for="date-naissance">Date de naissance:</label>
+                    <input type="date" id="date-naissance" name="date-naissance">
+                </div>
+            </div>
+
+            <div id="mariage-fields" class="dynamic-field" style="display: none;">
+                <div class="form-group">
+                    <label for="nom-epoux">Nom de l'époux:</label>
+                    <input type="text" id="nom-epoux" name="nom-epoux">
+                </div>
+                <div class="form-group">
+                    <label for="nom-epouse">Nom de l'épouse:</label>
+                    <input type="text" id="nom-epouse" name="nom-epouse">
+                </div>
+                <div class="form-group">
+                    <label for="date-mariage">Date de mariage:</label>
+                    <input type="date" id="date-mariage" name="date-mariage">
+                </div>
+            </div>
+
+            <div id="divorce-fields" class="dynamic-field" style="display: none;">
+                <div class="form-group">
+                    <label for="nom-divorce">Nom du conjoint/divorcé:</label>
+                    <input type="text" id="nom-divorce" name="nom-divorce">
+                </div>
+                <div class="form-group">
+                    <label for="date-divorce">Date de divorce:</label>
+                    <input type="date" id="date-divorce" name="date-divorce">
+                </div>
+            </div>
+
+            <div id="deces-fields" class="dynamic-field" style="display: none;">
+                <div class="form-group">
+                    <label for="nom-decede">Nom du défunt:</label>
+                    <input type="text" id="nom-decede" name="nom-decede">
+                </div>
+                <div class="form-group">
+                    <label for="date-deces">Date de décès:</label>
+                    <input type="date" id="date-deces" name="date-deces">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="file">Télécharger les documents nécessaires en PDF:</label>
+                <input type="file" id="file" name="file" accept="application/pdf" required>
+            </div>
+
+            <div class="form-group">
+                <label for="montant">Montant à payer:</label>
+                <input type="text" id="montant" name="montant" value="100.00" readonly> <!-- Ajustez le montant selon le service -->
+            </div>
+
+            <!-- Bouton de paiement PayPal -->
+            <div id="paypal-button-container"></div>
+
+            <!-- Soumission du formulaire après paiement réussi -->
+            <input type="hidden" id="payment-status" name="payment-status" value="non payé">
+        </form>
+    </div>
+
+    <!-- Script PayPal -->
+    <script>
+        paypal.Buttons({
+            createOrder: function(data, actions) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: document.getElementById('montant').value // Récupérer le montant à partir du champ
+                        }
+                    }]
+                });
+            },
+            onApprove: function(data, actions) {
+                return actions.order.capture().then(function(details) {
+                    alert('Transaction completed by ' + details.payer.name.given_name);
+                    document.getElementById('payment-status').value = 'payé';
+                    document.getElementById('declaration-form').submit(); // Soumettre le formulaire après paiement réussi
+                });
+            }
+        }).render('#paypal-button-container'); // Afficher le bouton PayPal dans cet élément
+    </script>
+</body>
+</html>
